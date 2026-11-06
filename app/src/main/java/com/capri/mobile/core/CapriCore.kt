@@ -59,7 +59,7 @@ class CapriCore private constructor(context: Context) {
             var reply: String
             var error = ""
             val route = try {
-                router.route(clean)
+                router.route(clean, language)
             } catch (e: Exception) {
                 null
             }

@@ -1,6 +1,7 @@
 package com.capri.mobile.ui
 
 import android.Manifest
+import android.app.AlarmManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -20,6 +21,9 @@ import android.widget.Toast
 import com.capri.mobile.R
 import com.capri.mobile.core.CapriCore
 import com.capri.mobile.core.Presets
+import com.capri.mobile.core.ReminderScheduler
+import com.capri.mobile.core.ReminderStore
+import com.capri.mobile.core.SchedulingParser
 import com.capri.mobile.core.Settings
 import com.capri.mobile.overlay.OverlayService
 
@@ -43,6 +47,9 @@ class SettingsActivity : android.app.Activity() {
     private lateinit var swRoam: Switch
     private lateinit var etOverlaySize: EditText
     private lateinit var tvFacts: TextView
+    private lateinit var tvReminders: TextView
+    private lateinit var btnExactAlarm: Button
+    private val reminders by lazy { ReminderStore(this) }
     private var binding = true
 
     private val langs = listOf("Auto", "English", "Spanish", "Portuguese (BR)", "French", "Russian", "Italian", "German", "Polish")
@@ -71,12 +78,15 @@ class SettingsActivity : android.app.Activity() {
         swRoam = findViewById(R.id.swRoam)
         etOverlaySize = findViewById(R.id.etOverlaySize)
         tvFacts = findViewById(R.id.tvMemoryFacts)
+        tvReminders = findViewById(R.id.tvReminders)
+        btnExactAlarm = findViewById(R.id.btnExactAlarm)
 
         spLanguage.adapter = spinnerAdapter(langs)
         spProvider.adapter = spinnerAdapter(Presets.all.map { it.name })
 
         fill(core.settings)
         refreshFacts()
+        refreshReminders()
 
         spProvider.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -111,6 +121,17 @@ class SettingsActivity : android.app.Activity() {
             core.clearChat()
             refreshFacts()
             Toast.makeText(this, "Chat history deleted.", Toast.LENGTH_SHORT).show()
+        }
+        btnExactAlarm.setOnClickListener { exactAlarms() }
+        findViewById<Button>(R.id.btnClearReminders).setOnClickListener {
+            try {
+                ReminderScheduler.cancelAll(this)
+                reminders.clear()
+                refreshReminders()
+                Toast.makeText(this, "All reminders cancelled.", Toast.LENGTH_SHORT).show()
+            } catch (_: Exception) {
+                Toast.makeText(this, "Couldn't cancel reminders. Try again.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         val version = try {
@@ -255,5 +276,59 @@ class SettingsActivity : android.app.Activity() {
         } else {
             facts.takeLast(20).joinToString("\n") { "• $it" }
         }
+    }
+
+    private fun exactAlarmsAllowed(): Boolean = try {
+        Build.VERSION.SDK_INT < 31 ||
+            (getSystemService(ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
+    } catch (_: Exception) {
+        false
+    }
+
+    private fun refreshReminders() {
+        val now = System.currentTimeMillis()
+        val list = try {
+            reminders.upcoming(now, 20)
+        } catch (_: Exception) {
+            emptyList()
+        }
+        tvReminders.text = if (list.isEmpty()) {
+            "No reminders armed. Ask Capri for one in chat."
+        } else {
+            list.mapIndexed { i, r ->
+                "${i + 1}. ${r.text} — ${SchedulingParser.describe(r.at, pt = true, nowMillis = now)}"
+            }.joinToString("\n")
+        }
+        val exact = exactAlarmsAllowed()
+        btnExactAlarm.isEnabled = !exact
+        btnExactAlarm.text = if (exact) {
+            "Exact alarms allowed ✓"
+        } else {
+            "Allow exact alarms (on-time reminders)"
+        }
+    }
+
+    private fun exactAlarms() {
+        if (Build.VERSION.SDK_INT < 31 || exactAlarmsAllowed()) {
+            Toast.makeText(this, "Exact alarms already allowed.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        try {
+            startActivity(
+                Intent(AndroidSettings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
+            )
+        } catch (_: Exception) {
+            try {
+                startActivity(Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+                Toast.makeText(this, "Open Alarms & reminders and allow Capri.", Toast.LENGTH_LONG).show()
+            } catch (_: Exception) {
+                Toast.makeText(this, "Open Android settings, Special app access, Alarms & reminders.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::tvReminders.isInitialized) refreshReminders()
     }
 }

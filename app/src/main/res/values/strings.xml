@@ -20,6 +20,9 @@
     <string name="clear_memory">Forget everything</string>
     <string name="notification_channel">Capri overlay</string>
     <string name="notification_text">Capri is hanging out on your screen</string>
+    <string name="reminder_channel">Capri reminders</string>
+    <string name="reminder_title">Capri reminder</string>
+    <string name="reminder_dismiss">Later, choom</string>
     <string name="permission_mic">Capri needs the microphone to hear you.</string>
     <string name="permission_overlay">Capri needs “Display over other apps” to float above your phone.</string>
     <string name="api_key_note">Encrypted on this device with Android Keystore. Never sent anywhere except your chosen AI endpoint.</string>

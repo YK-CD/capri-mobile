@@ -35,4 +35,24 @@ class MemoryExtractorTest {
     fun autoSkipsQuestions() {
         assertEquals(emptyList<String>(), MemoryExtractor.auto("do I like jazz?"))
     }
+
+    @Test
+    fun explicitRememberInPortuguese() {
+        assertEquals("você ama jazz", MemoryExtractor.explicit("lembre-se que eu amo jazz"))
+    }
+
+    @Test
+    fun timedPortugueseReminderIsNotMemory() {
+        assertNull(MemoryExtractor.explicit("me lembre de beber água em 20 minutos"))
+    }
+
+    @Test
+    fun autoExtractsPortugueseName() {
+        assertEquals(listOf("your name is Alex"), MemoryExtractor.auto("meu nome é Alex"))
+    }
+
+    @Test
+    fun autoExtractsPortuguesePreference() {
+        assertEquals(listOf("you love jazz"), MemoryExtractor.auto("eu amo jazz."))
+    }
 }
