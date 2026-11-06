@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Capri</string>
+    <string name="settings">Settings</string>
+    <string name="chat_hint">Say something to Capri…</string>
+    <string name="send">Send</string>
+    <string name="talk">Talk</string>
+    <string name="stop">Stop</string>
+    <string name="overlay_on">Overlay on</string>
+    <string name="overlay_off">Overlay off</string>
+    <string name="memory">Memory</string>
+    <string name="brain">Brain</string>
+    <string name="voice">Voice</string>
+    <string name="overlay">Overlay</string>
+    <string name="system_setup">HyperOS setup</string>
+    <string name="about">About</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear_chat">Clear chat</string>
+    <string name="clear_memory">Forget everything</string>
+    <string name="notification_channel">Capri overlay</string>
+    <string name="notification_text">Capri is hanging out on your screen</string>
+    <string name="permission_mic">Capri needs the microphone to hear you.</string>
+    <string name="permission_overlay">Capri needs “Display over other apps” to float above your phone.</string>
+    <string name="api_key_note">Encrypted on this device with Android Keystore. Never sent anywhere except your chosen AI endpoint.</string>
+</resources>

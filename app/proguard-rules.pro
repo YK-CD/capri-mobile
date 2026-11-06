@@ -1,0 +1,2 @@
+-keep class com.capri.mobile.** { *; }
+-dontwarn org.json.**
